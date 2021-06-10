@@ -1,0 +1,1 @@
+﻿Scaffold-DbContext "User Id=aeropro;Password=aeropro;Data Source=180.80.3.87:1521/OMADB;" Oracle.EntityFrameworkCore -OutputDir DbTemp -Tables APX_USER, APEX_WS_SESIONS,ATZ_RESPO,ATZ_CONTROLLI, VW_ATZ_CONTROLLI,ATZ_CONTROLLI, ATZ_CHECK_LIST, ATZ_RESPO

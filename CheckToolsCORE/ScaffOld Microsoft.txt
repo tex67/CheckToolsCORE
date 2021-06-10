@@ -1,0 +1,1 @@
+﻿Scaffold-DbContext "Data Source=mag01srv;Initial Catalog=AspNetIdentity4;Persist Security Info=True;User ID=sa;Password=saadmin"; Microsoft.EntityFrameworkCore.SqlServer -OutputDir DbTemp

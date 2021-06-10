@@ -1,0 +1,196 @@
+﻿@model CheckToolsCORE.Models.CheckListViewModel
+
+@{
+    ViewBag.Title = "Create";
+    Layout = null;
+}
+<script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+<script src="~/Scripts/lib/number-validation/Validator.js"></script>
+<script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+<script src="~/lib/number-validation/Validator.js"></script>
+
+
+
+<style>
+    body.waiting * {
+        cursor: progress;
+    }
+</style>
+
+
+<form asp-action="Create" id="checkform">
+
+    <div class="form-horizontal">
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="row row-bottom-margin">
+            <div class="form-group col-md-6">
+                @Html.LabelFor(model => model.CodiceArticolo, htmlAttributes: new { @class = "control-label" })
+                <div>
+                    @Html.EditorFor(model => model.CodiceArticolo, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+
+                </div>
+            </div>
+            <div class="form-group col-md-6">
+                @Html.LabelFor(model => model.Pn, htmlAttributes: new { @class = "control-label" })
+                <div>
+                    @Html.EditorFor(model => model.Pn, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+
+                </div>
+            </div>
+        </div>
+
+        <hr />
+        <div class="row row-bottom-margin">
+            <div class="form-group col-md-6">
+                @Html.LabelFor(model => model.Riferimento, htmlAttributes: new { @class = "control-label" })
+                <div>
+                    @Html.EditorFor(model => model.Riferimento, new { htmlAttributes = new { @class = "form-control", autocomplete = "off" } })
+                    @Html.ValidationMessageFor(model => model.Riferimento, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group  col-md-6">
+                @Html.LabelFor(model => model.DataDocumento, htmlAttributes: new { @class = "control-label" })
+                <div>
+                    @Html.EditorFor(model => model.DataDocumento, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.DataDocumento, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-6">
+                <input type="file" class="form-control" id="files" multiple />
+            </div>
+            <div class="form-group col-md-6">
+                <input type="button" id="btnUpload" class="btn btn-info" value="Salva Check List" />
+            </div>
+        </div>
+
+
+
+
+
+
+    </div>
+
+</form>
+
+<script>
+
+        var fpStartTime;
+        var fpEndTime;
+        var codArt;
+
+
+        $(document).ready(function () {
+            //VALIDAZIONE DATE IN FORMATO DD/MM/YYYYY
+            //$.validator.methods.date = function (value, element) {
+
+            //    return this.optional(element) || moment(value, "DD/MM/YYYY", true).isValid();
+            //};
+
+            ////VALIDAZIONE SEPARATORE DECIMALI ,
+            //$.validator.methods.number = function (value, element) {
+            //    debbuger;
+            //    return this.optional(element) || /^-?(?:\d+|\d{1, 3}(?:\.\d{3})+)?(?:,\d+)?$/.test(value);
+
+            //};
+
+            fpStartTime = flatpickr("#DataDocumento", {
+                enableTime: false,
+                dateFormat: "d/m/Y",
+                "locale": "it"
+            });
+            codArt = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.CodiceArticolo) as String);
+
+
+        });
+
+        $(document).on('click', '#btnUpload', function () {
+            if ($("#checkform").valid()) {
+                //Some code to move on next tab
+            } else {
+                return false;
+            }
+            //debugger;
+           // var token = $('input[name="__RequestVerificationToken"]').val();
+            //var token = $("[name='__RequestVerificationToken']").val();
+            //alert(token);
+
+            if (window.FormData !== undefined) {
+                debugger;
+                var stip = fpStartTime.selectedDates[0].toLocaleDateString();
+                var newStip = moment(stip, "DD/MM/YYYY").format('YYYY-MM-DD[T]HH:mm:ss');
+
+                $('#mainbody').addClass('waiting');
+                var fileUpload = $("#files").get(0);
+                var files = fileUpload.files;
+                var fileData = new FormData();
+                var riferimento = $("#Riferimento").val();
+
+                var pn = $("#Pn").val();
+                for (var i = 0; i < files.length; i++) {
+                    fileData.append(files[i].name, files[i]);
+                }
+                fileData.append('codart', codArt);
+                fileData.append('pn', pn);
+                fileData.append('riferimento', riferimento);
+                fileData.append('dataDocumento', stip);
+
+                $.ajax({
+                    url: 'ATZ_CHECK/Create',
+                    type: "POST",
+                    contentType: false,
+                    processData: false,
+                    data: fileData ,
+                    success: function (result) {
+                        debugger;
+                        if (result.success == true) {
+                            Swal.fire({
+                                title: "Upload Check List",
+                                text: "Upload eseguito correttamente",
+                                type: "success"
+                            }).then(function () {
+                                $('#mainbody').removeClass('waiting');
+                                $('#ControlliFormModel').modal("hide");
+                            });
+                        }
+                        else {
+                            Swal.fire({
+                                title: "Upload Check List",
+                                text: "Errore in fase di Upload",
+                                type: "error"
+                            }).then(function () {
+                                $('#mainbody').removeClass('waiting');
+                               
+                            });
+                        }
+                    },
+                    error: function (err) {
+
+                        Swal.fire({
+                            title: "Errore Upload",
+                            html: err.statusText,
+                            type: "error"
+
+                        });
+                    }
+                });
+
+            } else {
+
+                Swal.fire({
+                    title: "Errore Upload",
+                    html: err.statusText,
+                    type: "Formato dati non disponibile"
+
+                });
+            }
+
+        });
+</script>

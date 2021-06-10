@@ -1,0 +1,109 @@
+﻿@model IEnumerable<CheckToolsCORE.Models.AccountViewModels.EditUserViewModel>
+@{
+    ViewBag.Title = "Index";
+}
+
+
+<h2>Utenti</h2>
+<style type="text/css">
+
+
+    .pageLink {
+        color: #4f5775 !important;
+    }
+
+    .delLink {
+        color: #4f5775 !important;
+    }
+
+    .red {
+        color: indianred !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        //$('.delLink a').trigger('click');
+        $(".delLink").click(function (e) {
+            e.preventDefault();
+            var idUtente = $(this).attr('data-uid');
+            Swal.fire({
+                title: 'Confermi la cancellazione?',
+                text: "Attenzione!",
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.value) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/Account/Delete/",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        data: JSON.stringify({ id: idUtente }),
+                        success: function (data) {
+                            if (data.responseText == "ok") {
+
+                                location.reload(); // then reload the page.(3)
+
+                            }
+                        },
+                        error: function (data) {
+                            Swal.fire({
+                                title: 'Errore', text: data.responseText,
+                                icon: "error", closeOnConfirm: false,
+
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    });
+
+
+
+</script>
+<p>
+    @Html.ActionLink("Nuovo Utente", "Register", null, new { @class = "pageLink red" })
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.UserName)
+        </th>
+
+        <th>
+            @Html.DisplayNameFor(model => model.Email)
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        
+        <tr>
+            <td>
+                @item.UserName
+            </td>
+
+            <td>
+                 @item.Email
+            </td>
+            <td>
+                <a class="pageLink" asp-controller="Account" asp-action="ResetPassword" asp-route-code="@item.UserName"> Password Reset </a> |
+
+                <a class="pageLink" asp-controller="Account" asp-action="UserRoles" asp-route-id="@item.UserId"> Ruoli </a> |
+
+                <a class="pageLink" asp-controller="Account" asp-action="UserClaims" asp-route-id="@item.UserId"> Claims </a> |
+
+                <a class="delLink" asp-controller="Account" asp-action="Delete" asp-route-id="@item.UserId"> Password Reset </a>
+
+            </td>
+        </tr>
+    }
+
+</table>

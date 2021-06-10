@@ -1,0 +1,20 @@
+﻿
+<div class="modal fade" id="modalGeneric" role="dialog"></div>
+
+    <script>
+        $(document).ready(function () {
+            var url ="@Url.Action("DownloadCheckList", " ATZ_CHECK", new { codArt = "CN012833" })";
+           
+                $.ajax({
+                    url:url,
+                    type: "GET",
+                    dataType: "html",
+                    success: function (data) {
+                        console.log(data);
+                        $('#modalGeneric').html(data);
+                        $('#modalGeneric').modal('show');
+                    }
+                })
+           
+        });
+    </script>

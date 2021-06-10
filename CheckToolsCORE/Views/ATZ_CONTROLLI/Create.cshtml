@@ -1,0 +1,182 @@
+﻿@model CheckToolsCORE.Models.ControlliViewModel
+
+@{
+    ViewBag.Title = "Create";
+    Layout = null;
+}
+
+<script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+<script src="~/lib/number-validation/Validator.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+
+
+
+<form id="controlForm">
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.IdCheckList)
+    <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="row row-bottom-margin">
+            <div class="form-group col-md-6">
+                @Html.LabelFor(model => model.CodiceArticolo, htmlAttributes: new { @class = "control-label" })
+                <div>
+                    @Html.EditorFor(model => model.CodiceArticolo, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+
+                </div>
+            </div>
+            <div class="form-group col-md-6">
+                @Html.LabelFor(model => model.Pn, htmlAttributes: new { @class = "control-label" })
+                <div>
+                    @Html.EditorFor(model => model.Pn, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+
+                </div>
+            </div>
+        </div>
+        <div class="row row-bottom-margin">
+            <div class="form-group col-md-6">
+                @Html.LabelFor(model => model.RifChecklist, htmlAttributes: new { @class = "control-label" })
+                <div>
+                    @Html.EditorFor(model => model.RifChecklist, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+
+                </div>
+            </div>
+            <div class="form-group col-md-6">
+                @Html.LabelFor(model => model.DataChecklist, htmlAttributes: new { @class = "control-label" })
+                <div>
+                    @Html.EditorFor(model => model.DataChecklist, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+
+                </div>
+            </div>
+        </div>
+
+        <hr />
+
+        <div class="row row-bottom-margin">
+            <div class="form-group  col-md-6">
+                @Html.LabelFor(model => model.DataControllo, htmlAttributes: new { @class = "control-label" })
+                <div>
+                    @Html.EditorFor(model => model.DataControllo, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.DataControllo, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="form-group col-md-6">
+                <input type="file" class="form-control" id="files" multiple />
+            </div>
+            <div class="form-group col-md-6">
+                <input type="button" id="btnUpload" class="btn btn-info" value="Salva" />
+            </div>
+        </div>
+
+
+    </div>
+</form>
+<script>
+
+    var fpStartTime;
+    var fpEndTime;
+    var codArt;
+
+
+    $(document).ready(function () {
+        //VALIDAZIONE DATE IN FORMATO DD/MM/YYYYY
+        //$.validator.methods.date = function (value, element) {
+
+        //    return this.optional(element) || moment(value, "DD/MM/YYYY", true).isValid();
+        //};
+
+        ////VALIDAZIONE SEPARATORE DECIMALI ,
+        //$.validator.methods.number = function (value, element) {
+        //    debbuger;
+        //    return this.optional(element) || /^-?(?:\d+|\d{1, 3}(?:\.\d{3})+)?(?:,\d+)?$/.test(value);
+
+        //};
+
+        fpStartTime = flatpickr("#DataControllo", {
+            enableTime: false,
+            dateFormat: "d/m/Y",
+            "locale": "it"
+        });
+
+        $('#btnUpload').click( function () {
+            if ($("#controlForm").valid()) {
+                //Some code to move on next tab
+            } else {
+                return false;
+            }
+
+            if (window.FormData !== undefined) {
+                var fileUpload = $("#files").get(0);
+                var files = fileUpload.files;
+                var fileData = new FormData();
+                var riferimento = $("#Riferimento").val();
+                var dataDoc = $("#DataControllo").val();
+                var pn = $("#Pn").val();
+                var codArt = $("#CodiceArticolo").val();
+                var checkList = $("#IdCheckList").val();
+
+
+                for (var i = 0; i < files.length; i++) {
+                    fileData.append(files[i].name, files[i]);
+                }
+                fileData.append('codart', codArt);
+                fileData.append('pn', pn);
+                fileData.append('dataControllo', dataDoc);
+                fileData.append('checkList', checkList);
+
+
+                $.ajax({
+                    url: 'ATZ_CONTROLLI/Create',
+                    type: "POST",
+                    contentType: false,
+                    processData: false,
+                    data: fileData,
+                    success: function (result) {
+
+
+                        Swal.fire({
+                            title: "REGISTRAZIONE CONTROLLO",
+                            text: result,
+                            type: "success"
+                        }).then(function () {
+                            $('#tblControlli').DataTable().ajax.reload();
+                        }).then(function () {
+                            $("#ControlliFormModel").modal("hide");
+                        });
+
+
+                    },
+                    error: function (response) {
+
+                        var errMsg = response;
+                        try {
+                            var resObj = JSON.parse(response.responseText);
+                            errMsg = resObj.responseText;
+                        } catch (e) {
+
+                        }
+
+                        Swal.fire({
+                            title: "Errore nei dati",
+                            html: errMsg,
+                            type: "error"
+
+                        });
+                        alert(err.statusText);
+                    }
+                });
+            } else {
+                alert("FormData is not supported in the browser.");
+            }
+        });
+
+    });
+
+
+</script>
+
+
